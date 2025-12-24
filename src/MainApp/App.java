@@ -5,6 +5,7 @@ package MainApp;
 
 import MainApp.WeightedGraph.Edge;
 import MainApp.WeightedGraph.Graph;
+import MainApp.WeightedGraph.Vertex;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -257,25 +258,40 @@ public class App {
 		
 		//TODO: mettre tous les noeuds du graphe dans la liste des noeuds � visiter:
 		HashSet<Integer> to_visit = new HashSet<Integer>();
+		for(Vertex v : graph.vertexlist) {
+			to_visit.add(v.num);
+		}
 		
 		while (to_visit.contains(end))
 		{
 			//TODO: trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
+			double min_dist = Double.POSITIVE_INFINITY;
+			int min_v = -1;
+			for(int v : to_visit) {
+				if(graph.vertexlist.get(v).timeFromSource < min_dist) {
+					min_v = v;
+					min_dist = graph.vertexlist.get(v).timeFromSource;
+					
+				}
+			}
 			
-			int min_v = 0; //DEBUG remove comment after
-			
-			//      graph.vertexlist.get(v).timeFromSource minimale.
+			if(min_v == -1) break;
 			
 			//On l'enl�ve des noeuds � visiter
 			//get vertex with min dist
 			to_visit.remove(min_v);
 			number_tries += 1;
 			
-			//TODO: pour tous ses voisins, on v�rifie si on est plus rapide en passant par ce noeud.
+			//TODO-DONE!: pour tous ses voisins, on v�rifie si on est plus rapide en passant par ce noeud.
 			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
 			{
 				int to_try = graph.vertexlist.get(min_v).adjacencylist.get(i).destination;
-				//A completer
+				double poid = graph.vertexlist.get(min_v).adjacencylist.get(i).weight;
+				double new_dist = graph.vertexlist.get(min_v).timeFromSource + poid;
+				if(new_dist < graph.vertexlist.get(to_try).timeFromSource) {
+					graph.vertexlist.get(to_try).timeFromSource = new_dist;
+					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v); // Construction du chemin  : Mise ç jour du parent
+				}
 			}
 			//On met � jour l'affichage
 			try {
@@ -292,7 +308,14 @@ public class App {
 		System.out.println("	Total time of the path: " + graph.vertexlist.get(end).timeFromSource);
 		LinkedList<Integer> path=new LinkedList<Integer>();
 		path.addFirst(end);
-		//TODO: remplir la liste path avec le chemin
+		//TODO-DONE!: remplir la liste path avec le chemin
+		WeightedGraph.Vertex current = graph.vertexlist.get(end);
+		// Tantque ce sommet à un parent
+		while(current.prev != null) {
+			current = current.prev;
+			path.addFirst(current.num);
+		}
+		
 		
 		board.addPath(graph, path);
 		return path;
@@ -307,7 +330,7 @@ public class App {
 			Scanner myReader = new Scanner(myObj);
 			String data = "";
 			// On ignore les deux premi�res lignes
-			for (int i = 0; i < 3; i++) {
+			for (int adjacencylisti = 0; i < 3; i++) {
 				data = myReader.nextLine();
 				System.out.println("=========== DEBUG =================\n*** DATA **** :");
 				System.out.println(data);
@@ -346,7 +369,7 @@ public class App {
 				}
 			}
 
-			// TODO: ajouter les arr�tes
+			// TODO-DONE!: ajouter les arr�tes
 			for (int line = 0; line < nlines; line++) {
 				
 				for (int col = 0; col < ncols; col++) {
