@@ -208,6 +208,8 @@ public class App {
 			//TODO: trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
 			//      (graph.vertexlist.get(v).timeFromSource + heuristic) minimale.
 			
+			int min_v = 0 ; // DEBUG remove comment after
+			
 			//On l'enl�ve des noeuds � visiter
 			to_visit.remove(min_v);
 			number_tries += 1;
@@ -259,6 +261,9 @@ public class App {
 		while (to_visit.contains(end))
 		{
 			//TODO: trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
+			
+			int min_v = 0; //DEBUG remove comment after
+			
 			//      graph.vertexlist.get(v).timeFromSource minimale.
 			
 			//On l'enl�ve des noeuds � visiter
@@ -298,12 +303,16 @@ public class App {
 		//Lecture de la carte et cr�ation du graphe
 		try {
 			//TODO: obtenir le fichier qui d�crit la carte
-		      File myObj = new File("??.txt");
+		      File myObj = new File("data/graph.txt");
 		      Scanner myReader = new Scanner(myObj);
 		      String data = "";
 		      //On ignore les deux premi�res lignes
-		      for (int i=0; i < 3; i++)
+		      for (int i=0; i < 3; i++) {
 		    	  data = myReader.nextLine();
+		    	  System.out.println("=========== DEBUG =================\n*** DATA **** :");
+		    	  System.out.println(data);
+		    	  
+		      }
 		      
 		      //Lecture du nombre de lignes
 		      int nlines = Integer.parseInt(data.split("=")[1]);
@@ -343,6 +352,8 @@ public class App {
 		      //TODO: ajouter les arr�tes
 		      for (int line=0; line < nlines; line++)
 		      {
+		    	  if(line == 0)
+		    		  break; // DEBUG remove comment after
 		    	  for (int col=0; col < ncols; col++)
 		    	  {
 		    		  int source = line*ncols+col;
@@ -354,8 +365,8 @@ public class App {
 		    			  if (col > 0)
 		    			  {
 		    				  dest = (line - 1)*ncols+col - 1;
-		    				  weight = //A completer
-		    				  graph.addEgde(source, dest, weight);
+		    				 // weight = //A completer
+		    				 // graph.addEgde(source, dest, weight); DEBUG remove comment after
 		    			  }
 		    			  //A completer
 		    				  
@@ -377,7 +388,7 @@ public class App {
 		      int pixelSize = 10;
 		      Board board = new Board(graph, pixelSize, ncols, nlines, groundColor, startV, endV);
 		      drawBoard(board, nlines, ncols, pixelSize);
-		      board.repaint();
+		      board.repaint(); //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
 		      
 		      try {
 		    	    Thread.sleep(100);
