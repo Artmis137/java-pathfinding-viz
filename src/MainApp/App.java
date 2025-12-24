@@ -298,131 +298,135 @@ public class App {
 		return path;
 	}
 	
-	//M�thode principale
+	// M�thode principale
 	public static void main(String[] args) {
-		//Lecture de la carte et cr�ation du graphe
+		// Lecture de la carte et cr�ation du graphe
 		try {
-			//TODO: obtenir le fichier qui d�crit la carte
-		      File myObj = new File("data/graph.txt");
-		      Scanner myReader = new Scanner(myObj);
-		      String data = "";
-		      //On ignore les deux premi�res lignes
-		      for (int i=0; i < 3; i++) {
-		    	  data = myReader.nextLine();
-		    	  System.out.println("=========== DEBUG =================\n*** DATA **** :");
-		    	  System.out.println(data);
-		    	  
-		      }
-		      
-		      //Lecture du nombre de lignes
-		      int nlines = Integer.parseInt(data.split("=")[1]);
-		      //Et du nombre de colonnes
-		      data = myReader.nextLine();
-		      int ncols = Integer.parseInt(data.split("=")[1]);
-		      
-		      //Initialisation du graphe
-		      Graph graph = new Graph();
-		      
-		      HashMap<String, Integer> groundTypes = new HashMap<String, Integer>();
-		      HashMap<Integer, String> groundColor = new HashMap<Integer, String>();
-		      data = myReader.nextLine();
-		      data = myReader.nextLine();
-		      //Lire les diff�rents types de cases
-		      while (!data.equals("==Graph=="))
-		      {
-		    	  String name = data.split("=")[0];
-		    	  int time = Integer.parseInt(data.split("=")[1]);
-		    	  data = myReader.nextLine();
-		    	  String color = data;
-		    	  groundTypes.put(name, time);
-		    	  groundColor.put(time, color);
-		    	  data = myReader.nextLine();
-		      }
-		      
-		      //On ajoute les sommets dans le graphe (avec le bon type)
-		      for (int line=0; line < nlines; line++)
-		      {
-		    	  data = myReader.nextLine();
-		    	  for (int col=0; col < ncols; col++)
-		    	  {
-		    		  graph.addVertex(groundTypes.get(String.valueOf(data.charAt(col))));
-		    	  }
-		      }
-		      
-		      //TODO: ajouter les arr�tes
-		      for (int line=0; line < nlines; line++)
-		      {
-		    	  if(line == 0)
-		    		  break; // DEBUG remove comment after
-		    	  for (int col=0; col < ncols; col++)
-		    	  {
-		    		  int source = line*ncols+col;
-		    		  int dest;
-		    		  double weight;
-		    		  //On donne la premi�re arr�te
-		    		  if (line > 0)
-		    		  {
-		    			  if (col > 0)
-		    			  {
-		    				  dest = (line - 1)*ncols+col - 1;
-		    				 // weight = //A completer
-		    				 // graph.addEgde(source, dest, weight); DEBUG remove comment after
-		    			  }
-		    			  //A completer
-		    				  
-		    		  }
-		    		  //A completer
-		    	  }
-		      }
-		      
-		      //On obtient les noeuds de d�part et d'arriv�
-		      data = myReader.nextLine();
-		      data = myReader.nextLine();
-		      int startV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols + Integer.parseInt(data.split("=")[1].split(",")[1]);
-		      data = myReader.nextLine();
-		      int endV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols + Integer.parseInt(data.split("=")[1].split(",")[1]);
+			// TODO: obtenir le fichier qui d�crit la carte
+			File myObj = new File("data/graph.txt");
+			Scanner myReader = new Scanner(myObj);
+			String data = "";
+			// On ignore les deux premi�res lignes
+			for (int i = 0; i < 3; i++) {
+				data = myReader.nextLine();
+				System.out.println("=========== DEBUG =================\n*** DATA **** :");
+				System.out.println(data);
 
-		      myReader.close();
-		      
-		      //A changer pour avoir un affichage plus ou moins grand
-		      int pixelSize = 10;
-		      Board board = new Board(graph, pixelSize, ncols, nlines, groundColor, startV, endV);
-		      drawBoard(board, nlines, ncols, pixelSize);
-		      board.repaint(); //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
-		      
-		      try {
-		    	    Thread.sleep(100);
-		    	} catch(InterruptedException e) {
-		    	    System.out.println("stop");
-		    	}
-		      
-		      //On appelle Dijkstra
-		      LinkedList<Integer> path = Dijkstra(graph, startV, endV, nlines*ncols, board);
-		      //TODO: laisser le choix entre Dijkstra et A*
-		      
-		      //�criture du chemin dans un fichier de sortie
-		      try {
-			      File file = new File("out.txt");
-			      if (!file.exists()) {
-			    	  file.createNewFile();
-			      } 
-			      FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			      BufferedWriter bw = new BufferedWriter(fw);
-			      
-			      for (int i: path)
-			      {
-			    	  bw.write(String.valueOf(i));
-			    	  bw.write('\n');
-			      }
-			      bw.close();	
-		      
+			}
+
+			// Lecture du nombre de lignes
+			int nlines = Integer.parseInt(data.split("=")[1]);
+			// Et du nombre de colonnes
+			data = myReader.nextLine();
+			int ncols = Integer.parseInt(data.split("=")[1]);
+
+			// Initialisation du graphe
+			Graph graph = new Graph();
+
+			HashMap<String, Integer> groundTypes = new HashMap<String, Integer>();
+			HashMap<Integer, String> groundColor = new HashMap<Integer, String>();
+			data = myReader.nextLine();
+			data = myReader.nextLine();
+			// Lire les diff�rents types de cases
+			while (!data.equals("==Graph==")) {
+				String name = data.split("=")[0];
+				int time = Integer.parseInt(data.split("=")[1]);
+				data = myReader.nextLine();
+				String color = data;
+				groundTypes.put(name, time);
+				groundColor.put(time, color);
+				data = myReader.nextLine();
+			}
+
+			// On ajoute les sommets dans le graphe (avec le bon type)
+			for (int line = 0; line < nlines; line++) {
+				data = myReader.nextLine();
+				for (int col = 0; col < ncols; col++) {
+					graph.addVertex(groundTypes.get(String.valueOf(data.charAt(col))));
+				}
+			}
+
+			// TODO: ajouter les arr�tes
+			for (int line = 0; line < nlines; line++) {
+				
+				for (int col = 0; col < ncols; col++) {
+					int source = line * ncols + col;
+					int dest;
+					double weight;
+
+					for (int i = -1; i < 2; i++) {
+
+						for (int j = -1; j < 2; j++) {
+							// Si la case elle meme on continue 
+							if(i == 0 && j == 0) continue;
+							
+							int voisinLine = line + i;
+							int voisinCol = col +j;
+							if((voisinLine >= 0 && voisinLine < nlines) && (voisinCol >= 0 && voisinCol < ncols)) {
+								dest = voisinLine * ncols + voisinCol;
+								weight = (graph.vertexlist.get(source).indivTime + graph.vertexlist.get(dest).indivTime) / 2;
+								if(Math.abs(i) == 1 && Math.abs(j) == 1) {
+									weight *= Math.sqrt(2); 
+								}
+								
+								graph.addEgde(source, dest, weight);
+							}
+							
+						}
+					}
+					
+				}
+			}
+
+			// On obtient les noeuds de d�part et d'arriv�
+			data = myReader.nextLine();
+			data = myReader.nextLine();
+			int startV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols
+					+ Integer.parseInt(data.split("=")[1].split(",")[1]);
+			data = myReader.nextLine();
+			int endV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols
+					+ Integer.parseInt(data.split("=")[1].split(",")[1]);
+
+			myReader.close();
+
+			// A changer pour avoir un affichage plus ou moins grand
+			int pixelSize = 10;
+			Board board = new Board(graph, pixelSize, ncols, nlines, groundColor, startV, endV);
+			drawBoard(board, nlines, ncols, pixelSize);
+			board.repaint(); // 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
+
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				System.out.println("stop");
+			}
+
+			// On appelle Dijkstra
+			LinkedList<Integer> path = Dijkstra(graph, startV, endV, nlines * ncols, board);
+			// TODO: laisser le choix entre Dijkstra et A*
+
+			// �criture du chemin dans un fichier de sortie
+			try {
+				File file = new File("out.txt");
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+
+				for (int i : path) {
+					bw.write(String.valueOf(i));
+					bw.write('\n');
+				}
+				bw.close();
+
 			} catch (IOException e) {
 				e.printStackTrace();
-			  } 
-		    } catch (FileNotFoundException e) {
-		      System.out.println("An error occurred.");
-		      e.printStackTrace();
-		    }
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
 	}
 
 }
