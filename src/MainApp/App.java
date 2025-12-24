@@ -1,5 +1,5 @@
-// Par Sylvain Lobry, pour le cours "IF05X040 Algorithmique avanc�e"
-// de l'Universit� de Paris, 11/2020
+// Par Sylvain Lobry, pour le cours "IF05X040 Algorithmique avancée"
+// de l'Université de Paris, 11/2020
 
 package MainApp;
 
@@ -30,7 +30,10 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 
-//Classe pour g�rer l'affichage
+/**
+ * Classe gérant l'affihcage graphique du labyrinthe et des algorithmes.
+ * Ellle dessine la carte, l'exploration des noeuds et le chemin final.
+ */
 class Board extends JComponent 
 {
 	private static final long serialVersionUID = 1L;
@@ -45,6 +48,16 @@ class Board extends JComponent
 	int current;
 	LinkedList<Integer> path;
 	
+	/**
+	 * Constructeur de l'interface graphique.
+	 * @param graph Le graphe à afficher.
+	 * @param pixelSize Taille en pixels d'une cass.
+	 * @param ncols Nombre de colonnes.
+	 * @param nlines Nombre de lignes.
+	 * @param colors Mapping des types de terrain vers couleurs.
+	 * @param start Index du point de départ.
+	 * @param end Index du point d'arrivée.
+	 */
     public Board(Graph graph, int pixelSize, int ncols, int nlines, HashMap<Integer, String> colors, int start, int end)
     {
         super();
@@ -60,7 +73,9 @@ class Board extends JComponent
         this.path = null;
     }
     
-    //Mise � jour de l'affichage
+    /**
+     * Gère le rendu graphique des composants (cases, exploration, chemin rouge).
+     */
 	public void paint(Graphics g) 
 	{
 		Graphics2D g2 = (Graphics2D) g;
@@ -153,7 +168,11 @@ class Board extends JComponent
 		}
 	}
 	
-	//Mise � jour du graphe (� appeler avant de mettre � jour l'affichage)
+	/**
+	 * Met à jour le noeud courant en cours d'exploration et rafraîchit l'affichage.
+	 * @param graph Le graphe mis à jour.
+	 * @param current L'index du noeud actuellement traité.
+	 */
 	public void update(Graph graph, int current)
 	{
 		this.graph = graph;
@@ -161,7 +180,11 @@ class Board extends JComponent
 		repaint();
 	}
 	
-	//Indiquer le chemin (pour affichage)
+	/**
+	 * Affiche le chemin final calculé par l'algorithme.
+	 * @param graph Le graphe
+	 * @param path Liste ordonnée des index des sommets du chemin.
+	 */
 	public void addPath(Graph graph, LinkedList<Integer> path)
 	{
 		this.graph = graph;
@@ -171,10 +194,18 @@ class Board extends JComponent
 	}
 }
 
-//Classe principale. C'est ici que vous devez faire les modifications
+/**
+ * Classe principale contenant les implémentations des algorithmes de pathfinding.
+ */
 public class App {
 	
-	//Initialise l'affichage
+	/**
+	 * Initialise la fenêtre principale de l'application.
+	 * @param board
+	 * @param nlines
+	 * @param ncols
+	 * @param pixelSize
+	 */
 	private static void drawBoard(Board board, int nlines, int ncols, int pixelSize)
 	{
 	    JFrame window = new JFrame("Plus court chemin");
@@ -184,22 +215,24 @@ public class App {
 	    window.setVisible(true);
 	}
 	
-	//M�thode A*
-	//graph: le graphe repr�sentant la carte
-	//start: un entier repr�sentant la case de d�part
-	//       (entier unique correspondant � la case obtenue dans le sens de la lecture)
-	//end: un entier repr�sentant la case d'arriv�e
-	//       (entier unique correspondant � la case obtenue dans le sens de la lecture)
-	//ncols: le nombre de colonnes dans la carte
-	//numberV: le nombre de cases dans la carte
-	//board: l'affichage
-	//retourne une liste d'entiers correspondant au chemin.
+	/**
+	 * Impléménetation de l'algorithme A*.
+	 * Uitlise une heuristique pour guider la recherche vers la destionation.
+	 * @param graph Le grpahe représentant la carte.
+	 * @param start Index du sommet de départ.
+	 * @param end Index du sommet d'arrivée.
+	 * @param ncols Nombre de colonnes (pour le calcul de l'heuristique).
+	 * @param numberV Nombre total de sommets.
+	 * @param board Composant d'affichage pour la visualisation.
+	 * @return Liste ordonnée des sommets formant le chemin le plus court.
+	 */
 	private static LinkedList<Integer> AStar(Graph graph, int start, int end, int ncols, int numberV, Board board)
 	{
+		// Initialisation g(start) = 0
 		graph.vertexlist.get(start).timeFromSource=0;
 		int number_tries = 0;
 		
-		//TODO: mettre tous les noeuds du graphe dans la liste des noeuds � visiter:
+		
 		HashSet<Integer> to_visit = new HashSet<Integer>();
 		for(Vertex v : graph.vertexlist) {
 			to_visit.add(v.num);
@@ -207,7 +240,7 @@ public class App {
 		
 		while (to_visit.contains(end))
 		{
-			//TODO: trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
+			// Recherche du noeud avec f(n) = g(n) + h(n) minimal
 			double min_dist = Double.POSITIVE_INFINITY;
 			int min_v = -1;
 			for(int v : to_visit) {
@@ -221,12 +254,10 @@ public class App {
 			
 			if(min_v == -1) break;
 			
-			//On l'enl�ve des noeuds � visiter
-			//get vertex with min dist
 			to_visit.remove(min_v);
 			number_tries += 1;
 			
-			//TODO-DONE!: pour tous ses voisins, on v�rifie si on est plus rapide en passant par ce noeud.
+			// Relachement des voisins (Relaxation)
 			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
 			{
 				int to_try = graph.vertexlist.get(min_v).adjacencylist.get(i).destination;
@@ -237,7 +268,7 @@ public class App {
 					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v); // Construction du chemin  : Mise ç jour du parent
 				}
 			}
-			//On met � jour l'affichage
+			// Visualisation en temps réel
 			try {
 	    	    board.update(graph, min_v);
 	    	    Thread.sleep(10);
@@ -250,9 +281,10 @@ public class App {
 		System.out.println("Done! Using A*:");
 		System.out.println("	Number of nodes explored: " + number_tries);
 		System.out.println("	Total time of the path: " + graph.vertexlist.get(end).timeFromSource);
+		
+		// Reconstruction du chemin
 		LinkedList<Integer> path=new LinkedList<Integer>();
 		path.addFirst(end);
-		//TODO-DONE!: remplir la liste path avec le chemin
 		WeightedGraph.Vertex current = graph.vertexlist.get(end);
 		// Tantque ce sommet à un parent
 		while(current.prev != null) {
@@ -266,36 +298,35 @@ public class App {
 	}
 	
 	/**
-	 * 
-	 * @param n1 L'index de sommet
-	 * @param n2 L'index de sommet
-	 * @param ncols
-	 * @return
+	 * Calcule l'estimation du coût restant (Heuristique).
+	 * Uitlise la distance eucludienne à vol d'oiseau.
+	 * @param n1 Index du sommet actuel. 
+	 * @param n2 Index de la cible.
+	 * @param ncols Nombre de colonnnes de la grille.
+	 * @return Distance eucludienne entre n1 et n2.
 	 */
 	private static double estimation(int n1, int n2, int ncols) {
-		// Calucl des coordonnées(x1 y1) pour n1
 		int x1= n1 % ncols, y1 = n1 / ncols;
-		
-		// Calucl des coordonnées(x2 y2) pour n2
 		int x2= n2 % ncols, y2 = n2 / ncols;
 		return (Math.sqrt(Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2)));
 	}
 
-	//M�thode Dijkstra
-	//graph: le graphe repr�sentant la carte
-	//start: un entier repr�sentant la case de d�part
-	//       (entier unique correspondant � la case obtenue dans le sens de la lecture)
-	//end: un entier repr�sentant la case d'arriv�e
-	//       (entier unique correspondant � la case obtenue dans le sens de la lecture)
-	//numberV: le nombre de cases dans la carte
-	//board: l'affichage
-	//retourne une liste d'entiers correspondant au chemin.
+	/**
+	 * Implémentation de l'algorithme de Dijkstra.
+	 * Explore les noeuds par coût croissant g(n) dpeuis la source.
+	 * @param graph 
+	 * @param start
+	 * @param end
+	 * @param numberV
+	 * @param board
+	 * @return Liste ordonnée des sommets du chemin.
+	 */
 	private static LinkedList<Integer> Dijkstra(Graph graph, int start, int end, int numberV, Board board)
 	{
 		graph.vertexlist.get(start).timeFromSource=0;
 		int number_tries = 0;
 		
-		//TODO: mettre tous les noeuds du graphe dans la liste des noeuds � visiter:
+	
 		HashSet<Integer> to_visit = new HashSet<Integer>();
 		for(Vertex v : graph.vertexlist) {
 			to_visit.add(v.num);
@@ -303,7 +334,7 @@ public class App {
 		
 		while (to_visit.contains(end))
 		{
-			//TODO: trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
+			// Trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
 			double min_dist = Double.POSITIVE_INFINITY;
 			int min_v = -1;
 			for(int v : to_visit) {
@@ -316,12 +347,11 @@ public class App {
 			
 			if(min_v == -1) break;
 			
-			//On l'enl�ve des noeuds � visiter
-			//get vertex with min dist
+			//On l'enlève des noeuds à visiter
 			to_visit.remove(min_v);
 			number_tries += 1;
 			
-			//TODO-DONE!: pour tous ses voisins, on v�rifie si on est plus rapide en passant par ce noeud.
+			// Pour tous ses voisins, on vérifie si on est plus rapide en passant par ce noeud.
 			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
 			{
 				int to_try = graph.vertexlist.get(min_v).adjacencylist.get(i).destination;
@@ -329,10 +359,10 @@ public class App {
 				double new_dist = graph.vertexlist.get(min_v).timeFromSource + poid;
 				if(new_dist < graph.vertexlist.get(to_try).timeFromSource) {
 					graph.vertexlist.get(to_try).timeFromSource = new_dist;
-					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v); // Construction du chemin  : Mise ç jour du parent
+					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v);
 				}
 			}
-			//On met � jour l'affichage
+			//On met à jour l'affichage
 			try {
 	    	    board.update(graph, min_v);
 	    	    Thread.sleep(10);
@@ -347,7 +377,8 @@ public class App {
 		System.out.println("	Total time of the path: " + graph.vertexlist.get(end).timeFromSource);
 		LinkedList<Integer> path=new LinkedList<Integer>();
 		path.addFirst(end);
-		//TODO-DONE!: remplir la liste path avec le chemin
+		
+		// Remplir la liste path avec le chemin
 		WeightedGraph.Vertex current = graph.vertexlist.get(end);
 		// Tantque ce sommet à un parent
 		while(current.prev != null) {
@@ -360,9 +391,13 @@ public class App {
 		return path;
 	}
 	
-	// M�thode principale
+	/**
+	 * Charge la carte, construit le graphe et gère l'interaction utilisateur.
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		// Lecture de la carte et cr�ation du graphe
+		Scanner scan = new Scanner(System.in);
 		try {
 			// TODO-DONE!: obtenir le fichier qui d�crit la carte
 			File myObj = new File("data/graph.txt");
@@ -462,7 +497,7 @@ public class App {
 			
 			// TODO-DONE! : laisser le choix entre Dijkstra et A*
 			// --- Choix de l'algorithme ---
-			Scanner scan = new Scanner(System.in);
+			
 			System.out.println("Quel algorithme souhiatez-vous utiliser ?");
 			System.out.println("1. Dijkstra");
 			System.out.println("2. A*");
@@ -500,6 +535,8 @@ public class App {
 		} catch (FileNotFoundException e) {
 			System.out.println("An error occurred.");
 			e.printStackTrace();
+		}finally {
+			scan.close();
 		}
 	}
 
