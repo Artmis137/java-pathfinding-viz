@@ -65,7 +65,7 @@ git clone https://github.com/Artmis137/java-pathfinding-viz.git
 
 -   **Graphe** : Construction avec une connectivité à **8 voisins**.
 -   **Poids** : Moyenne des temps de parcours entre deux sommets, multipliée par pour les déplacements diagonaux.
--   \*\*Heuristique (A\*)\*\* : Distance euclidienne entre le nœud courant et la cible.
+-   **Heuristique (A*)** : Distance euclidienne entre le nœud courant et la cible.
 
 ## Résultats obtenus (graph.txt)
 
