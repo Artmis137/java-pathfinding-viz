@@ -1,5 +1,18 @@
 # Compiled class file
 *.class
+/bin
+
+.vscode
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+.DS_Store
+
+*.zip
+out.txt
 
 # Log file
 *.log
