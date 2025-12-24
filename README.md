@@ -13,14 +13,25 @@ L'arborescence du projet est organisée de la façon suivante :
 ``` text
 java-pathfinding-viz/
 ├── data/
-│   └── graph.txt          # Fichier contenant la carte et les temps de parcours
+│   └── graph.txt          # Carte d'entrée définissant les types de terrain
+├── doc/                   # DOCUMENTATION GÉNÉRÉE (Javadoc)
+│   └── index.html         # Point d'entrée de la documentation technique
 ├── src/
 │   └── MainApp/           # Package principal
-│       ├── App.java       # Point d'entrée et logique des algorithmes
+│       ├── App.java       # Interface graphique et Algorithmes (Dijkstra/A*)
 │       └── WeightedGraph.java # Structure de données (Graphe, Sommets, Arêtes)
-├── .gitignore             # Fichiers exclus du suivi de version
-└── README.md              # Documentation du projet
+├── out.txt                # Résultat du dernier chemin calculé
+├── README.md              # Ce fichier
+└── .gitignore             # Fichiers exclus du rendu (bin/, .settings/, etc.)            # Documentation du projet
 ```
+
+## Documentation Technique (Javadoc)
+
+Une documentation complète des classes et des méthodes a été rédigée. Pour la consulter :
+
+1.  Accédez au dossier `doc/`.
+2.  Ouvrez le fichier **`index.html`** dans votre navigateur web préféré.
+3.  Vous y trouverez le détail des implémentations, notamment la gestion du voisinage à 8 directions et le calcul des poids.
 
 ## Compilation et Exécution
 
@@ -50,13 +61,13 @@ Pour récupérer l'intégralité du projet et son historique de développement :
 git clone https://github.com/Artmis137/java-pathfinding-viz.git
 ```
 
-## 🧠 Détails Techniques
+## Détails Techniques
 
 -   **Graphe** : Construction avec une connectivité à **8 voisins**.
 -   **Poids** : Moyenne des temps de parcours entre deux sommets, multipliée par pour les déplacements diagonaux.
 -   \*\*Heuristique (A\*)\*\* : Distance euclidienne entre le nœud courant et la cible.
 
-## 📊 Résultats obtenus (graph.txt)
+## Résultats obtenus (graph.txt)
 
 Le programme permet de comparer l'efficacité de Dijkstra et A\* pour un même chemin :
 
