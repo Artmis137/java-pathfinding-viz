@@ -440,7 +440,7 @@ public class App {
 				}
 			}
 
-			// TODO-DONE!: ajouter les arr�tes
+			// Ajout des arêtes
 			for (int line = 0; line < nlines; line++) {
 				
 				for (int col = 0; col < ncols; col++) {
