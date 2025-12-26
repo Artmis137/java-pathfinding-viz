@@ -446,7 +446,7 @@ public class App {
 				for (int col = 0; col < ncols; col++) {
 					int source = line * ncols + col;
 					int dest;
-					double weight;
+					double weight = 1.0; // Valeur fixe
 
 					for (int i = -1; i < 2; i++) {
 
@@ -457,13 +457,13 @@ public class App {
 							int voisinLine = line + i;
 							int voisinCol = col +j;
 							if((voisinLine >= 0 && voisinLine < nlines) && (voisinCol >= 0 && voisinCol < ncols)) {
-								dest = voisinLine * ncols + voisinCol;
-								weight = (graph.vertexlist.get(source).indivTime + graph.vertexlist.get(dest).indivTime) / 2;
-								if(Math.abs(i) == 1 && Math.abs(j) == 1) {
-									weight *= Math.sqrt(2); 
+								if(Math.abs(i) + Math.abs(j) == 1) {
+									
+									dest = voisinLine * ncols + voisinCol;
+									
+									
+									graph.addEgde(source, dest, weight);
 								}
-								
-								graph.addEgde(source, dest, weight);
 							}
 							
 						}
