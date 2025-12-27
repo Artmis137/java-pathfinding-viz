@@ -31,8 +31,7 @@ import javax.swing.JFrame;
 
 
 /**
- * Classe gérant l'affihcage graphique du labyrinthe et des algorithmes.
- * Ellle dessine la carte, l'exploration des noeuds et le chemin final.
+ * Classe gérant l'affichage graphique du labyrinthe et des algorithmes.
  */
 class Board extends JComponent 
 {
@@ -41,7 +40,6 @@ class Board extends JComponent
 	int pixelSize;
 	int ncols;
 	int nlines;
-	HashMap<Integer, String> colors;
 	int start;
 	int end;
 	double max_distance;
@@ -58,14 +56,13 @@ class Board extends JComponent
 	 * @param start Index du point de départ.
 	 * @param end Index du point d'arrivée.
 	 */
-    public Board(Graph graph, int pixelSize, int ncols, int nlines, HashMap<Integer, String> colors, int start, int end)
+    public Board(Graph graph, int pixelSize, int ncols, int nlines, int start, int end)
     {
         super();
         this.graph = graph;
         this.pixelSize = pixelSize;
         this.ncols = ncols;
         this.nlines = nlines;
-        this.colors = colors;
         this.start = start;
         this.end = end;
         this.max_distance = ncols * nlines;
@@ -81,72 +78,49 @@ class Board extends JComponent
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				        	RenderingHints.VALUE_ANTIALIAS_ON);
-		//Ugly clear of the frame
-		g2.setColor(Color.cyan);
+		//Fond blanc
+		g2.setColor(Color.WHITE);
 		g2.fill(new Rectangle2D.Double(0,0,this.ncols*this.pixelSize, this.nlines*this.pixelSize));
 		
 		
 		int num_case = 0;
 		for (WeightedGraph.Vertex v : this.graph.vertexlist)
 		{
-			double type = v.indivTime;
+			
 			int i = num_case / this.ncols;
 			int j = num_case % this.ncols;
 
-			if (colors.get((int)type).equals("green"))
-				g2.setPaint(Color.green);
-			if (colors.get((int)type).equals("gray"))
-				g2.setPaint(Color.gray);
-			if (colors.get((int)type).equals("blue"))
-				g2.setPaint(Color.blue);
-			if (colors.get((int)type).equals("yellow"))
-				g2.setPaint(Color.yellow);
-			g2.fill(new Rectangle2D.Double(j*this.pixelSize, i*this.pixelSize, this.pixelSize, this.pixelSize));
+			// Logique d'affichage
+			if(v.info == '#') {
+				g2.setPaint(Color.BLACK); // Mur en noir
+				g2.fill(new Rectangle2D.Double(j * this.pixelSize, i * this.pixelSize, this.pixelSize, this.pixelSize));
+			}else if (v.info == 'F') {
+                g2.setPaint(Color.ORANGE); // Feu en Orange
+                g2.fill(new Rectangle2D.Double(j * this.pixelSize, i * this.pixelSize, this.pixelSize, this.pixelSize));
+            } else if (v.info == 'D') {
+                g2.setPaint(Color.GREEN); // Départ en Vert
+                g2.fill(new Rectangle2D.Double(j * this.pixelSize, i * this.pixelSize, this.pixelSize, this.pixelSize));
+            } else if (v.info == 'S') {
+                g2.setPaint(Color.BLUE); // Sortie en Bleu
+                g2.fill(new Rectangle2D.Double(j * this.pixelSize, i * this.pixelSize, this.pixelSize, this.pixelSize));
+            } else {
+                // Case libre (.) : on dessine juste une bordure légère
+                g2.setPaint(Color.LIGHT_GRAY);
+                g2.draw(new Rectangle2D.Double(j * this.pixelSize, i * this.pixelSize, this.pixelSize, this.pixelSize));
+            }
+			
+			// Point rouge pour le noeud courant exploré par A*
 			
 			if (num_case == this.current)
 			{
-				g2.setPaint(Color.red);
-				g2.draw(new Ellipse2D.Double(j*this.pixelSize+this.pixelSize/2, i*this.pixelSize+this.pixelSize/2, 6, 6));
-			}
-			if (num_case == this.start)
-			{
-				g2.setPaint(Color.white);
-				g2.fill(new Ellipse2D.Double(j*this.pixelSize+this.pixelSize/2, i*this.pixelSize+this.pixelSize/2, 4, 4));
-				
-			}
-			if (num_case == this.end)
-			{
-				g2.setPaint(Color.black);
-				g2.fill(new Ellipse2D.Double(j*this.pixelSize+this.pixelSize/2, i*this.pixelSize+this.pixelSize/2, 4, 4));
+				g2.setPaint(Color.RED);
+				g2.draw(new Ellipse2D.Double(j*this.pixelSize + this.pixelSize/2 - 3, i * this.pixelSize + this.pixelSize/2 - 3, 6, 6));
 			}
 			
 			num_case += 1;
 		}
 		
-		num_case = 0;
-		for (WeightedGraph.Vertex v : this.graph.vertexlist)
-		{
-			int i = num_case / this.ncols;
-			int j = num_case % this.ncols;
-			if (v.timeFromSource < Double.POSITIVE_INFINITY)
-			{
-				float g_value = (float) (1 - v.timeFromSource / this.max_distance);
-				if (g_value < 0)
-					g_value = 0;
-				g2.setPaint(new Color(g_value, g_value, g_value));
-				g2.fill(new Ellipse2D.Double(j*this.pixelSize+this.pixelSize/2, i*this.pixelSize+this.pixelSize/2, 4, 4));
-				WeightedGraph.Vertex previous = v.prev;
-				if (previous != null)
-				{
-					int i2 = previous.num / this.ncols;
-					int j2 = previous.num % this.ncols;
-					g2.setPaint(Color.black);
-					g2.draw(new Line2D.Double(j * this.pixelSize + this.pixelSize/2, i * this.pixelSize + this.pixelSize/2, j2 * this.pixelSize + this.pixelSize/2, i2 * this.pixelSize + this.pixelSize/2));
-				}
-			}
-				
-			num_case += 1;
-		}
+		// Dessin du chemin final (si trouvé)
 		
 		int prev = -1;
 		if (this.path != null)
@@ -156,12 +130,12 @@ class Board extends JComponent
 			{
 				if (prev != -1)
 				{
-					g2.setPaint(Color.red);
+					g2.setPaint(Color.RED);
 					int i = prev / this.ncols;
 					int j = prev % this.ncols;
 					int i2 = cur / this.ncols;
 					int j2 = cur % this.ncols;
-					g2.draw(new Line2D.Double(j * this.pixelSize + this.pixelSize/2, i * this.pixelSize + this.pixelSize/2, j2 * this.pixelSize + this.pixelSize/2, i2 * this.pixelSize + this.pixelSize/2));
+					g2.draw(new Line2D.Double(j * this.pixelSize + this.pixelSize/2.0, i * this.pixelSize + this.pixelSize/2.0, j2 * this.pixelSize + this.pixelSize/2.0, i2 * this.pixelSize + this.pixelSize/2.0));
 				}
 				prev = cur;
 			}
@@ -208,7 +182,7 @@ public class App {
 	 */
 	private static void drawBoard(Board board, int nlines, int ncols, int pixelSize)
 	{
-	    JFrame window = new JFrame("Plus court chemin");
+	    JFrame window = new JFrame("Labyrinthe d'Ayutthaya");
 	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    window.setBounds(0, 0, ncols*pixelSize+20, nlines*pixelSize+40);
 	    window.getContentPane().add(board);
@@ -222,11 +196,10 @@ public class App {
 	 * @param start Index du sommet de départ.
 	 * @param end Index du sommet d'arrivée.
 	 * @param ncols Nombre de colonnes (pour le calcul de l'heuristique).
-	 * @param numberV Nombre total de sommets.
 	 * @param board Composant d'affichage pour la visualisation.
 	 * @return Liste ordonnée des sommets formant le chemin le plus court.
 	 */
-	private static LinkedList<Integer> AStar(Graph graph, int start, int end, int ncols, int numberV, Board board)
+	private static LinkedList<Integer> AStar(Graph graph, int start, int end, int ncols, Board board)
 	{
 		// Initialisation g(start) = 0
 		graph.vertexlist.get(start).timeFromSource=0;
@@ -244,7 +217,8 @@ public class App {
 			double min_dist = Double.POSITIVE_INFINITY;
 			int min_v = -1;
 			for(int v : to_visit) {
-				double f_n = graph.vertexlist.get(v).timeFromSource + estimation(v, end, ncols);
+				// Utilisation de Manhattan pour l'heuristique
+				double f_n = graph.vertexlist.get(v).timeFromSource + estimationManhattan(v, end, ncols);
 				if( f_n < min_dist) {
 					min_v = v;
 					min_dist = f_n;
@@ -255,7 +229,7 @@ public class App {
 			if(min_v == -1) break;
 			
 			to_visit.remove(min_v);
-			number_tries += 1;
+			number_tries ++;
 			
 			// Relachement des voisins (Relaxation)
 			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
@@ -269,13 +243,14 @@ public class App {
 				}
 			}
 			// Visualisation en temps réel
-			try {
-	    	    board.update(graph, min_v);
-	    	    Thread.sleep(10);
-	    	} catch(InterruptedException e) {
-	    	    System.out.println("stop");
-	    	}
-	            
+			if(board != null) {
+				try {
+		    	    board.update(graph, min_v);
+		    	    Thread.sleep(10);
+		    	} catch(InterruptedException e) {
+		    	    System.out.println("stop");
+		    	}
+			}  
 		}
 		
 		System.out.println("Done! Using A*:");
@@ -293,250 +268,113 @@ public class App {
 		}
 		
 		
-		board.addPath(graph, path);
+		if(board != null) {
+			board.addPath(graph, path);
+		}
 		return path;
 	}
 	
 	/**
 	 * Calcule l'estimation du coût restant (Heuristique).
-	 * Uitlise la distance eucludienne à vol d'oiseau.
+	 * Utilise Manhattan
 	 * @param n1 Index du sommet actuel. 
 	 * @param n2 Index de la cible.
 	 * @param ncols Nombre de colonnnes de la grille.
 	 * @return Distance eucludienne entre n1 et n2.
 	 */
-	private static double estimation(int n1, int n2, int ncols) {
+	private static double estimationManhattan(int n1, int n2, int ncols) {
 		int x1= n1 % ncols, y1 = n1 / ncols;
 		int x2= n2 % ncols, y2 = n2 / ncols;
-		return (Math.sqrt(Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2)));
+		return (Math.abs(x1-x2) + Math.abs(y1-y2));
 	}
 
-	/**
-	 * Implémentation de l'algorithme de Dijkstra.
-	 * Explore les noeuds par coût croissant g(n) dpeuis la source.
-	 * @param graph 
-	 * @param start
-	 * @param end
-	 * @param numberV
-	 * @param board
-	 * @return Liste ordonnée des sommets du chemin.
-	 */
-	private static LinkedList<Integer> Dijkstra(Graph graph, int start, int end, int numberV, Board board)
-	{
-		graph.vertexlist.get(start).timeFromSource=0;
-		int number_tries = 0;
-		
-	
-		HashSet<Integer> to_visit = new HashSet<Integer>();
-		for(Vertex v : graph.vertexlist) {
-			to_visit.add(v.num);
-		}
-		
-		while (to_visit.contains(end))
-		{
-			// Trouver le noeud min_v parmis tous les noeuds v ayant la distance temporaire
-			double min_dist = Double.POSITIVE_INFINITY;
-			int min_v = -1;
-			for(int v : to_visit) {
-				if(graph.vertexlist.get(v).timeFromSource < min_dist) {
-					min_v = v;
-					min_dist = graph.vertexlist.get(v).timeFromSource;
-					
-				}
-			}
-			
-			if(min_v == -1) break;
-			
-			//On l'enlève des noeuds à visiter
-			to_visit.remove(min_v);
-			number_tries += 1;
-			
-			// Pour tous ses voisins, on vérifie si on est plus rapide en passant par ce noeud.
-			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
-			{
-				int to_try = graph.vertexlist.get(min_v).adjacencylist.get(i).destination;
-				double poid = graph.vertexlist.get(min_v).adjacencylist.get(i).weight;
-				double new_dist = graph.vertexlist.get(min_v).timeFromSource + poid;
-				if(new_dist < graph.vertexlist.get(to_try).timeFromSource) {
-					graph.vertexlist.get(to_try).timeFromSource = new_dist;
-					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v);
-				}
-			}
-			//On met à jour l'affichage
-			try {
-	    	    board.update(graph, min_v);
-	    	    Thread.sleep(10);
-	    	} catch(InterruptedException e) {
-	    	    System.out.println("stop");
-	    	}
-	            
-		}
-		
-		System.out.println("Done! Using Dijkstra:");
-		System.out.println("	Number of nodes explored: " + number_tries);
-		System.out.println("	Total time of the path: " + graph.vertexlist.get(end).timeFromSource);
-		LinkedList<Integer> path=new LinkedList<Integer>();
-		path.addFirst(end);
-		
-		// Remplir la liste path avec le chemin
-		WeightedGraph.Vertex current = graph.vertexlist.get(end);
-		// Tantque ce sommet à un parent
-		while(current.prev != null) {
-			current = current.prev;
-			path.addFirst(current.num);
-		}
-		
-		
-		board.addPath(graph, path);
-		return path;
-	}
 	
 	/**
 	 * Charge la carte, construit le graphe et gère l'interaction utilisateur.
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		// Lecture de la carte et cr�ation du graphe
-		Scanner scan = new Scanner(System.in);
+	public static void main(String[] args) {		
 		try {
-			// TODO-DONE!: obtenir le fichier qui d�crit la carte
-			File myObj = new File("data/graph.txt");
+			// Obtenir le fichier de ayutthaya
+			File myObj = new File("data/ayutthaya.txt");
 			Scanner myReader = new Scanner(myObj);
-			String data = "";
-			// On ignore les deux premi�res lignes
-			for (int i = 0; i < 3; i++) {
-				data = myReader.nextLine();
-			}
-
-			// Lecture du nombre de lignes
-			int nlines = Integer.parseInt(data.split("=")[1]);
-			// Et du nombre de colonnes
-			data = myReader.nextLine();
-			int ncols = Integer.parseInt(data.split("=")[1]);
-
-			// Initialisation du graphe
-			Graph graph = new Graph();
-
-			HashMap<String, Integer> groundTypes = new HashMap<String, Integer>();
-			HashMap<Integer, String> groundColor = new HashMap<Integer, String>();
-			data = myReader.nextLine();
-			data = myReader.nextLine();
-			// Lire les diff�rents types de cases
-			while (!data.equals("==Graph==")) {
-				String name = data.split("=")[0];
-				int time = Integer.parseInt(data.split("=")[1]);
-				data = myReader.nextLine();
-				String color = data;
-				groundTypes.put(name, time);
-				groundColor.put(time, color);
-				data = myReader.nextLine();
-			}
-
-			// On ajoute les sommets dans le graphe (avec le bon type)
-			for (int line = 0; line < nlines; line++) {
-				data = myReader.nextLine();
-				for (int col = 0; col < ncols; col++) {
-					graph.addVertex(groundTypes.get(String.valueOf(data.charAt(col))));
-				}
-			}
-
-			// Ajout des arêtes
-			for (int line = 0; line < nlines; line++) {
+			
+			if(!myReader.hasNextInt()) return;
+			int T = myReader.nextInt(); // Nombre d'instances
+			System.out.println("T : " + T);
+			
+			for(int t = 0; t < T; t++) {
+				int nlines = myReader.nextInt();
+				int ncols = myReader.nextInt();
+				Graph graph = new Graph();
+				int startV = -1;
+				int endV = -1;
 				
-				for (int col = 0; col < ncols; col++) {
-					int source = line * ncols + col;
-					int dest;
-					double weight = 1.0; // Valeur fixe
-
-					for (int i = -1; i < 2; i++) {
-
-						for (int j = -1; j < 2; j++) {
-							// Si la case elle meme on continue 
-							if(i == 0 && j == 0) continue;
-							
-							int voisinLine = line + i;
-							int voisinCol = col +j;
-							if((voisinLine >= 0 && voisinLine < nlines) && (voisinCol >= 0 && voisinCol < ncols)) {
-								if(Math.abs(i) + Math.abs(j) == 1) {
-									
-									dest = voisinLine * ncols + voisinCol;
-									
-									
-									graph.addEgde(source, dest, weight);
+				// Lecture de la grille et détection D/S
+				for(int i = 0; i< nlines; i++) {
+					String line = myReader.next();
+					for(int j = 0; j < ncols; j++) {
+						char symbol = line.charAt(j);
+						graph.addVertex(symbol);
+						int currentIdx = i * ncols + j;
+						if(symbol == 'D') startV = currentIdx;
+						if(symbol == 'S') endV = currentIdx;
+					}
+				}
+				
+				// Création des arêtes (4-connexité + Obstacles)
+				for(int line = 0; line < nlines; line++) {
+					for(int col = 0; col < ncols; col++) {
+						int source = line * ncols + col;
+						if(graph.vertexlist.get(source).info == '#' || graph.vertexlist.get(source).info == 'F') continue;
+						
+						for (int i = -1; i <= 1; i++) {
+							for (int j = -1; j <= 1; j++) {
+								 
+								if((Math.abs(i) + Math.abs(j)) == 1 ) { // Nord, Sud, Est, Ouest
+									int vL = line + i;
+									int vC = col + j;
+									if(vL >= 0 && vL < nlines && vC >= 0 && vC < ncols) {
+										int dest  = vL * ncols + vC;
+										char infoDest = graph.vertexlist.get(dest).info;
+										// on ne connecte pas si destination est mur ou feu
+										if(infoDest != '#' && infoDest != 'F'){
+											graph.addEgde(source, dest, 1.0);
+										}
+									}
 								}
+								
+								
+								
 							}
-							
 						}
 					}
+				}
+				
+				int pixelSize = 40; // Taille des cases
+				Board board = new Board(graph, pixelSize, ncols, nlines, startV, endV);
+				drawBoard(board, nlines, ncols, pixelSize);
+				
+				// Exécution (A* pour l'exemple)
+				if(startV!= -1 && endV != -1) {
+					LinkedList<Integer> path = AStar(graph, startV, endV, ncols, board);
+					if(graph.vertexlist.get(endV).timeFromSource != Double.POSITIVE_INFINITY) {
+						System.out.println("Instance " + (t+1) + ": Y");
+					}else {
+						System.out.println("Instance " + (t+1) + ": N");
+					}
+				}
+				// Petite pausse entre les instances pour voir le résultat
+				try {
+					Thread.sleep(2000);
+				} catch (Exception e) {
 					
 				}
 			}
-
-			// On obtient les noeuds de d�part et d'arriv�
-			data = myReader.nextLine();
-			data = myReader.nextLine();
-			int startV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols
-					+ Integer.parseInt(data.split("=")[1].split(",")[1]);
-			data = myReader.nextLine();
-			int endV = Integer.parseInt(data.split("=")[1].split(",")[0]) * ncols
-					+ Integer.parseInt(data.split("=")[1].split(",")[1]);
-
 			myReader.close();
-
-			// A changer pour avoir un affichage plus ou moins grand
-			int pixelSize = 10;
-			Board board = new Board(graph, pixelSize, ncols, nlines, groundColor, startV, endV);
-			drawBoard(board, nlines, ncols, pixelSize);
-			board.repaint(); // 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
-
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				System.out.println("stop");
-			}
-			
-			// TODO-DONE! : laisser le choix entre Dijkstra et A*
-			// --- Choix de l'algorithme ---
-			
-			System.out.println("Quel algorithme souhiatez-vous utiliser ?");
-			System.out.println("1. Dijkstra");
-			System.out.println("2. A*");
-			System.out.println("Votre choix (1 ou 2) : ");
-			
-			int choice = scan.nextInt();
-			LinkedList<Integer> path;
-			
-			if(choice == 2) {
-				// On appelle A*
-				path = AStar(graph, startV, endV, ncols, nlines * ncols, board);
-			}else {
-				// Par défaut ou choix 1, on appelle Dijkstra
-				path = Dijkstra(graph, startV, endV, nlines * ncols, board);
-			}
-
-			// �criture du chemin dans un fichier de sortie
-			try {
-				File file = new File("out.txt");
-				if (!file.exists()) {
-					file.createNewFile();
-				}
-				FileWriter fw = new FileWriter(file.getAbsoluteFile());
-				BufferedWriter bw = new BufferedWriter(fw);
-
-				for (int i : path) {
-					bw.write(String.valueOf(i));
-					bw.write('\n');
-				}
-				bw.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		} catch (FileNotFoundException e) {
 			System.out.println("An error occurred.");
 			e.printStackTrace();
-		}finally {
-			scan.close();
 		}
 	}
 
