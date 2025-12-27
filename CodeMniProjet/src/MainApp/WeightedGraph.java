@@ -37,18 +37,20 @@ public class WeightedGraph {
     	Vertex prev;			// Référence vers le sommet précédent pour reconstruire le chemin final
     	LinkedList<Edge> adjacencylist; // Liste des arêtes partant de ce sommet (8 voisins max)
     	int num;				// Index unique du sommet dans la liste du graphe
+    	char info; 				// Pour Stocker le symbole '.', '#', 'F', 'D', 'S'
     	
     	/**
     	 * Constructeur d'un sommet avec initailisation des valeurs par défaut.
     	 * @param num L'index du sommet.
     	 */
-    	public Vertex(int num) {
+    	public Vertex(int num, char info) {
     		this.indivTime = Double.POSITIVE_INFINITY;
     		this.timeFromSource = Double.POSITIVE_INFINITY;
     		this.heuristic = -1;
     		this.prev = null;
     		this.adjacencylist = new LinkedList<Edge>();
     		this.num = num;
+    		this.info = info; 
     	}
     	
     	/**
@@ -77,12 +79,11 @@ public class WeightedGraph {
 
         /**
          * Ajoute un nouveau sommet au grpahe.
-         * @param indivTime  Le coût traversée de ce sommet.
+         * @param info
          */
-        public void addVertex(double indivTime)
+        public void addVertex(char info)
         {
-        	Vertex v = new Vertex(num_v);
-        	v.indivTime = indivTime;
+        	Vertex v = new Vertex(num_v, info);
         	vertexlist.add(v);
         	num_v = num_v + 1;
         }
@@ -99,29 +100,4 @@ public class WeightedGraph {
         }
 
     }
-    
-    /**
-     * Méthode de test rapide pour valider la structure de données.
-     * @param args Pour passer des arguments à partir du sommet (non traité ici).
-     */
-      public static void main(String[] args) {
-            int vertices = 6;
-            Graph graph = new Graph();
-            graph.addVertex(10);
-            graph.addVertex(10);
-            graph.addVertex(10);
-            graph.addVertex(10);
-            graph.addVertex(10);
-            graph.addVertex(10);
-            graph.addEgde(0, 1, 1.0);
-            graph.addEgde(0, 2, 1.0);
-            graph.addEgde(1, 3, 1.0);
-            graph.addEgde(1, 2, 1.0);
-            graph.addEgde(2, 3, 1.0);
-            graph.addEgde(3, 4, 1.0);
-            graph.addEgde(4, 0, 1.0);
-            graph.addEgde(4, 1, 1.0);
-            graph.addEgde(4, 5, 1.0);
-            //graph.printGraph();
-        }
 }
