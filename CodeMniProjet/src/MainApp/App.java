@@ -3,6 +3,8 @@
 
 package MainApp;
 
+import java.util.Queue;
+
 import MainApp.WeightedGraph.Edge;
 import MainApp.WeightedGraph.Graph;
 import MainApp.WeightedGraph.Vertex;
@@ -10,8 +12,11 @@ import MainApp.WeightedGraph.Vertex;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.HashSet;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -189,105 +194,135 @@ public class App {
 	    window.setVisible(true);
 	}
 	
+
 	/**
-	 * Impléménetation de l'algorithme A*.
-	 * Uitlise une heuristique pour guider la recherche vers la destionation.
-	 * @param graph Le grpahe représentant la carte.
-	 * @param start Index du sommet de départ.
-	 * @param end Index du sommet d'arrivée.
-	 * @param ncols Nombre de colonnes (pour le calcul de l'heuristique).
-	 * @param board Composant d'affichage pour la visualisation.
-	 * @return Liste ordonnée des sommets formant le chemin le plus court.
+	 * Calcule le temps d'arrivée du feu sur chaque case du labyrinthe.
+	 * Utilise un algorithme de parcours en largeur (BFS) multi-sources.
+	 * Le feu ne peut pas traverser les murs ('#').
+	 * @param graph Le graphe représentant la pièce.
+	 * @param nlines Nombre de lignes de la grille.
+	 * @param ncols Nombre de colonnes de la grille.
+	 * @return Un tableau contenant le temps minimum d'arrivée du feu pour chaque sommet.
 	 */
-	private static LinkedList<Integer> AStar(Graph graph, int start, int end, int ncols, Board board)
-	{
-		// Initialisation g(start) = 0
-		graph.vertexlist.get(start).timeFromSource=0;
-		int number_tries = 0;
+	private static double[] computeFireTimes(Graph graph, int nlines, int ncols) {
+		int totalNodes = nlines * ncols;
+		double[] fireTimes = new double[totalNodes];
+		Arrays.fill(fireTimes, Double.POSITIVE_INFINITY);
+		Queue<Integer> queue = new LinkedList<>();
 		
-		
-		HashSet<Integer> to_visit = new HashSet<Integer>();
+		// On identifie toutes les sources de feu initiales
 		for(Vertex v : graph.vertexlist) {
-			to_visit.add(v.num);
+			if(v.info == 'F') {
+				fireTimes[v.num] = 0;
+				queue.add(v.num);
+			}
 		}
 		
-		while (to_visit.contains(end))
-		{
-			// Recherche du noeud avec f(n) = g(n) + h(n) minimal
-			double min_dist = Double.POSITIVE_INFINITY;
-			int min_v = -1;
-			for(int v : to_visit) {
-				// Utilisation de Manhattan pour l'heuristique
-				double f_n = graph.vertexlist.get(v).timeFromSource + estimationManhattan(v, end, ncols);
-				if( f_n < min_dist) {
-					min_v = v;
-					min_dist = f_n;
-					
+		int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // N, S, E, 0
+		while(!queue.isEmpty()) {
+			int u = queue.poll();
+			int r = u / ncols;
+			int c = u % ncols;
+			
+			for(int[] d : dirs) {
+				int nr = r + d[0], nc = c + d[1];
+				if(nr >= 0 && nr < nlines && nc >= 0 && nc < ncols) {
+					int vIdx = nr * ncols + nc;
+					// Le feu ne traverse pas les murs.
+					if(graph.vertexlist.get(vIdx).info != '#' && fireTimes[vIdx] == Double.POSITIVE_INFINITY) {
+						fireTimes[vIdx] = fireTimes[u] + 1;
+						queue.add(vIdx);
+					}
 				}
 			}
-			
-			if(min_v == -1) break;
-			
-			to_visit.remove(min_v);
-			number_tries ++;
-			
-			// Relachement des voisins (Relaxation)
-			for (int i = 0; i < graph.vertexlist.get(min_v).adjacencylist.size(); i++)
-			{
-				int to_try = graph.vertexlist.get(min_v).adjacencylist.get(i).destination;
-				double poid = graph.vertexlist.get(min_v).adjacencylist.get(i).weight;
-				double new_dist = graph.vertexlist.get(min_v).timeFromSource + poid;
-				if(new_dist < graph.vertexlist.get(to_try).timeFromSource) {
-					graph.vertexlist.get(to_try).timeFromSource = new_dist;
-					graph.vertexlist.get(to_try).prev = graph.vertexlist.get(min_v); // Construction du chemin  : Mise ç jour du parent
-				}
-			}
-			// Visualisation en temps réel
-			if(board != null) {
-				try {
-		    	    board.update(graph, min_v);
-		    	    Thread.sleep(10);
-		    	} catch(InterruptedException e) {
-		    	    System.out.println("stop");
-		    	}
-			}  
 		}
 		
-		System.out.println("Done! Using A*:");
-		System.out.println("	Number of nodes explored: " + number_tries);
-		System.out.println("	Total time of the path: " + graph.vertexlist.get(end).timeFromSource);
-		
-		// Reconstruction du chemin
-		LinkedList<Integer> path=new LinkedList<Integer>();
-		path.addFirst(end);
-		WeightedGraph.Vertex current = graph.vertexlist.get(end);
-		// Tantque ce sommet à un parent
-		while(current.prev != null) {
-			current = current.prev;
-			path.addFirst(current.num);
-		}
-		
-		
-		if(board != null) {
-			board.addPath(graph, path);
-		}
-		return path;
+		return fireTimes;
 	}
 	
 	/**
-	 * Calcule l'estimation du coût restant (Heuristique).
-	 * Utilise Manhattan
-	 * @param n1 Index du sommet actuel. 
-	 * @param n2 Index de la cible.
-	 * @param ncols Nombre de colonnnes de la grille.
-	 * @return Distance eucludienne entre n1 et n2.
+	 * Estime la distance restante entre deux sommets.
+	 * Utilise la distance de Manhattan (|x1-x2| + |y1-y2|), optimale pour 
+	 * les déplacements orthogonaux (4-connexité).
 	 */
 	private static double estimationManhattan(int n1, int n2, int ncols) {
-		int x1= n1 % ncols, y1 = n1 / ncols;
-		int x2= n2 % ncols, y2 = n2 / ncols;
-		return (Math.abs(x1-x2) + Math.abs(y1-y2));
+		return (Math.abs( n1 % ncols- n2 % ncols) + Math.abs(n1 / ncols - n2 / ncols));
 	}
 
+	/**
+	 * Recherche le plus court chemin pour le prisonnier en évitant le feu.
+	 * Implémentation de l'algorithme A* avec une contrainte de survie dynamique :
+	 * le prisonnier doit atteindre une case strictement avant le feu.
+	 * @param graph Le graphe du labyrinthe.
+	 * @param start Index du sommet de départ ('D').
+	 * @param end Index du sommet de sortie ('S').
+	 * @param ncols Nombre de colonnes (pour le calcul de l'heuristique).
+	 * @param board Composant graphique pour l'animation.
+	 * @param fireTimes Temps d'arrivée du feu pré-calculés.
+	 * @return La liste des sommets formant le chemin de survie, ou une liste vide.
+	 */
+	private static LinkedList<Integer> AStar(Graph graph, int start, int end, int ncols, Board board, double[] fireTimes)
+	{
+		// Initialisation g(start) = 0
+		graph.vertexlist.get(start).timeFromSource=0;
+		
+		// PriorityQueue utilisant l'heuristique de Manhattan
+		PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingDouble(v -> graph.vertexlist.get(v).timeFromSource + estimationManhattan(v, end, ncols)));
+		
+		pq.add(start);
+		HashSet<Integer> visited = new HashSet<>();		
+		int number_tries = 0;
+		
+		while(!pq.isEmpty()) {
+			int u = pq.poll();
+			
+			if(u == end) break;
+			if(visited.contains(u)) continue;
+			visited.add(u);
+			number_tries++;
+			
+			// Animation graphique
+			if(board != null) {
+				try {
+		    	    board.update(graph, u);
+		    	    Thread.sleep(10);
+		    	} catch(InterruptedException e) {
+		    	    System.out.println("Animation interrompue");
+		    	}
+			}  
+			
+			for(WeightedGraph.Edge edge : graph.vertexlist.get(u).adjacencylist) {
+				int v = edge.destination;
+				double arrivalTime = graph.vertexlist.get(u).timeFromSource + edge.weight;
+				
+				// Condition de survie : le prisionnier (arrivalTime) doit être là avant le feu (fireTimes)
+				if(arrivalTime < fireTimes[v]) {
+					if(arrivalTime < graph.vertexlist.get(v).timeFromSource) {
+						graph.vertexlist.get(v).timeFromSource = arrivalTime;
+						graph.vertexlist.get(v).prev = graph.vertexlist.get(u);
+						pq.add(v);
+					}
+				}
+			}
+		}
+		
+		// Reconstruction du chemin
+		LinkedList<Integer> path = new LinkedList<>();
+		Vertex current = graph.vertexlist.get(end);
+		while(current != null) {
+			path.addFirst(current.num);
+			current = current.prev;
+		}
+		
+		// Affichage du chemin final
+		if(board != null && !path.isEmpty()) {
+			board.addPath(graph, path); // Trace la ligne rouge finale
+		}
+		
+		System.out.println("Calcul terminé : " + number_tries + " noeuds exporés.");		
+		return path;
+	}
+	
 	
 	/**
 	 * Charge la carte, construit le graphe et gère l'interaction utilisateur.
@@ -299,16 +334,18 @@ public class App {
 			File myObj = new File("data/ayutthaya.txt");
 			Scanner myReader = new Scanner(myObj);
 			
+			while(myReader.hasNext() && !myReader.hasNextInt()) {
+				myReader.next();
+			}
 			if(!myReader.hasNextInt()) return;
 			int T = myReader.nextInt(); // Nombre d'instances
-			System.out.println("T : " + T);
+			
 			
 			for(int t = 0; t < T; t++) {
 				int nlines = myReader.nextInt();
 				int ncols = myReader.nextInt();
 				Graph graph = new Graph();
-				int startV = -1;
-				int endV = -1;
+				int startV = -1, endV = -1;
 				
 				// Lecture de la grille et détection D/S
 				for(int i = 0; i< nlines; i++) {
@@ -316,55 +353,41 @@ public class App {
 					for(int j = 0; j < ncols; j++) {
 						char symbol = line.charAt(j);
 						graph.addVertex(symbol);
-						int currentIdx = i * ncols + j;
-						if(symbol == 'D') startV = currentIdx;
-						if(symbol == 'S') endV = currentIdx;
+						if(symbol == 'D') startV = i * ncols + j;;
+						if(symbol == 'S') endV = i * ncols + j;;
 					}
 				}
 				
-				// Création des arêtes (4-connexité + Obstacles)
+				// 4-connexité sans les murs
 				for(int line = 0; line < nlines; line++) {
 					for(int col = 0; col < ncols; col++) {
 						int source = line * ncols + col;
-						if(graph.vertexlist.get(source).info == '#' || graph.vertexlist.get(source).info == 'F') continue;
-						
-						for (int i = -1; i <= 1; i++) {
-							for (int j = -1; j <= 1; j++) {
-								 
-								if((Math.abs(i) + Math.abs(j)) == 1 ) { // Nord, Sud, Est, Ouest
-									int vL = line + i;
-									int vC = col + j;
-									if(vL >= 0 && vL < nlines && vC >= 0 && vC < ncols) {
-										int dest  = vL * ncols + vC;
-										char infoDest = graph.vertexlist.get(dest).info;
-										// on ne connecte pas si destination est mur ou feu
-										if(infoDest != '#' && infoDest != 'F'){
-											graph.addEgde(source, dest, 1.0);
-										}
-									}
-								}
-								
-								
-								
-							}
-						}
+						if(graph.vertexlist.get(source).info == '#') continue;
+						int[][] steps = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+						for (int[] d : steps) {
+                            int vL = line + d[0], vC = col + d[1];
+                            if (vL >= 0 && vL < nlines && vC >= 0 && vC < ncols) {
+                                int dst = vL * ncols + vC;
+                                if (graph.vertexlist.get(dst).info != '#') graph.addEgde(source, dst, 1.0);
+                            }
+                        }
 					}
 				}
 				
-				int pixelSize = 40; // Taille des cases
-				Board board = new Board(graph, pixelSize, ncols, nlines, startV, endV);
-				drawBoard(board, nlines, ncols, pixelSize);
+				double[] fireTimes = computeFireTimes(graph, nlines, ncols);
+				Board board = new Board(graph, 40, ncols, nlines, startV, endV);
+				drawBoard(board, nlines, ncols, 40);
 				
 				// Exécution (A* pour l'exemple)
 				if(startV!= -1 && endV != -1) {
-					LinkedList<Integer> path = AStar(graph, startV, endV, ncols, board);
+					AStar(graph, startV, endV, ncols, board, fireTimes);
 					if(graph.vertexlist.get(endV).timeFromSource != Double.POSITIVE_INFINITY) {
 						System.out.println("Instance " + (t+1) + ": Y");
 					}else {
 						System.out.println("Instance " + (t+1) + ": N");
 					}
 				}
-				// Petite pausse entre les instances pour voir le résultat
+				// Pausse entre les instances pour voir le résultat
 				try {
 					Thread.sleep(2000);
 				} catch (Exception e) {
