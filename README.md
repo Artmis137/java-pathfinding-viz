@@ -31,6 +31,10 @@ NIMAGA_MiniProjet/
     └── NIMAGA_PartB.jar     <-- Exécutable binaire (Module B)
 ```
 
+## ⚠️ **IMPORTANT : Gestion des chemins de fichievs**
+
+*(Valable pour module A et B)* Le programme utilise des chemins relatifs pour accéder aux données par défaut. - **Si vous utilisez un argument** : Vous pouvez lancer le JAR de n'importe où. `java -jar NIMAGA_MiniProjet.jar /un/chemin/absolu/vers/test.txt` - **Si vous ne mettez pas d'argument** : Vous devez impérativement lancer la commande depuis la racine du dossier du projet (là où se trouve le dossier `data/`). Sinon, le programme ne trouvera pas les instances par défaut et s'arrêtera.
+
 ## Module A : Le Labyrinthe d'Ayutthaya
 
 Ce module résout le problème d'évasion d'un prisonnier face à un incendie dynamique.

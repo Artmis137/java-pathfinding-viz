@@ -132,7 +132,7 @@ public class App {
 	 *             fichier.
 	 */
 	public static void main(String[] args) {
-		File fileToRead;
+		File fileToRead = null;
 		if (args.length > 0) {
 			fileToRead = new File(args[0]);
 			System.out.println("[INFO] Lecture du fichier argument : " + args[0]);
@@ -140,7 +140,15 @@ public class App {
 			fileToRead = new File("data/ayutthaya.txt");
 			System.out.println("[INFO] Utilisation du fichier par défaut (dans le dossier CodeMiniProjet) : data/ayutthaya.txt");
 		}
+		
+		// On vérifie l'existance avant d'ouvrir le fichier
+		if(!fileToRead.exists()) {
+			System.out.println("[ERREUR] Le fichier est introuvable : " + fileToRead.getAbsolutePath());
+		    System.out.println("[AIDE] Assurez-vous d'être dans le dossier du projet ou de donner un chemin valide en argument.");
+		    return; // On quitte proprement
+		}
 
+		
 		try (Scanner reader = new Scanner(fileToRead)) {
 			setupGUI();
 			while (reader.hasNext() && !reader.hasNextInt())
