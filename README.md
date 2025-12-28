@@ -4,14 +4,13 @@
 
 **Date :** Décembre 2025
 
-**Cours :** IF05X040 - Algorithmique avancée (Université de Paris)
-
+**Cours :** IF05X040 - Algorithmique avancée (Université Paris Cité)
 
 ## 📂 Structure du Rendu
 
 Le projet est organisé en deux modules logiciels distincts, accompagnés de leurs rapports d'analyse respectifs à la racine.
 
-```text
+``` text
 NIMAGA_MiniProjet/
 ├── README.md                <-- Ce fichier d'instructions
 ├── NIMAGA_MiniProjet.pdf    <-- Rapport d'analyse : Partie A (Ayutthaya)
@@ -30,9 +29,7 @@ NIMAGA_MiniProjet/
     ├── data/                <-- graph.txt (Carte de terrain)
     ├── doc/                 <-- Javadoc technique (index.html)
     └── NIMAGA_PartB.jar     <-- Exécutable binaire (Module B)
-
 ```
-
 
 ## Module A : Le Labyrinthe d'Ayutthaya
 
@@ -40,17 +37,16 @@ Ce module résout le problème d'évasion d'un prisonnier face à un incendie dy
 
 ### Spécificités techniques
 
-* **Algorithme de survie** : A* avec contrainte de temps dynamique.
-* **Heuristique** : Distance de Manhattan (), optimale pour la **4-connexité**.
-* **Gestion du feu** : Pré-calcul de la propagation par un **BFS multi-sources**.
+-   **Algorithme de survie** : A\* avec contrainte de temps dynamique.
+-   **Heuristique** : Distance de Manhattan (), optimale pour la **4-connexité**.
+-   **Gestion du feu** : Pré-calcul de la propagation par un **BFS multi-sources**.
 
 ### Exécution (JAR)
 
 Le programme accepte le chemin d'un fichier d'entrée en argument.
 
-```bash
+``` bash
 java -jar CodeMiniProjet/NIMAGA_MiniProjet.jar CodeMiniProjet/data/ayutthaya.txt
-
 ```
 
 *Si aucun argument n'est fourni, le programme charge par défaut `data/ayutthaya.txt` qui utilise l'exmple donné dans le sujet.*
@@ -59,25 +55,24 @@ java -jar CodeMiniProjet/NIMAGA_MiniProjet.jar CodeMiniProjet/data/ayutthaya.txt
 
 Le programme affiche les sorties attendues pour les instances types (exemple donné dans le sujet) :
 
-* **Instance 1** : `Y` (Le prisonnier s'échappe).
-* **Instance 2** : `N` (Le feu bloque la sortie).
-* **Instance 3** : `N` (Prisonnier emmuré).
+-   **Instance 1** : `Y` (Le prisonnier s'échappe).
+-   **Instance 2** : `N` (Le feu bloque la sortie).
+-   **Instance 3** : `N` (Prisonnier emmuré).
 
-## Module B : Visualiseur de Chemins (Dijkstra / A*)
+## Module B : Visualiseur de Chemins (Dijkstra / A\*)
 
 Ce module compare l'efficacité des algorithmes de recherche de chemin sur différents types de terrains (herbe, eau, sable, etc.).
 
 ### Spécificités Techniques
 
-* **Connectivité** : 8-voisins (déplacements diagonaux inclus).
-* **Poids** : Coût calculé selon le type de terrain. Les diagonales sont pondérées par sqrt(2).
-* **Heuristique** : Distance Euclidienne.
+-   **Connectivité** : 8-voisins (déplacements diagonaux inclus).
+-   **Poids** : Coût calculé selon le type de terrain. Les diagonales sont pondérées par sqrt(2).
+-   **Heuristique** : Distance Euclidienne.
 
 ### Exécution (JAR)
 
-```bash
+``` bash
 java -jar CodePartB/NIMAGA_PartB.jar CodePartB/data/graph.txt
-
 ```
 
 ## Documentation technique (Javadoc)
@@ -86,12 +81,11 @@ Chaque module contient sa propre documentation générée automatiquement à par
 
 Pour consulter les détails des classes, des méthodes, de leurs **arguments (@param)** et de leurs **retours (@return)** :
 
-1. Naviguez dans le dossier `doc/` du module souhaité.
-2. Ouvrez le fichier **`index.html`** dans un navigateur web.
+1.  Naviguez dans le dossier `doc/` du module souhaité.
+2.  Ouvrez le fichier **`index.html`** dans un navigateur web.
 
-* **Doc Module A** : `CodeMiniProjet/doc/index.html`
-* **Doc Module B** : `CodePartB/doc/index.html`
-
+-   **Doc Module A** : `CodeMiniProjet/doc/index.html`
+-   **Doc Module B** : `CodePartB/doc/index.html`
 
 ## Compilation manuelle (sources)
 
@@ -99,24 +93,21 @@ Si vous souhaitez recompiler les projets manuellement :
 
 **Module A :**
 
-```bash
+``` bash
 javac -d CodeMiniProjet/bin CodeMiniProjet/src/MainApp/*.java
 java -cp CodeMiniProjet/bin MainApp.App CodeMiniProjet/data/ayutthaya.txt
-
 ```
 
 **Module B :**
 
-```bash
+``` bash
 javac -d CodePartB/bin CodePartB/src/MainApp/*.java
 java -cp CodePartB/bin MainApp.App CodePartB/data/graph.txt
-
 ```
 
 ## Rapports d'analyse
 
 Les rapports détaillent les preuves de complexité, l'analyse des heuristiques et les captures d'écran des résultats obtenus :
 
-* **Partie A** : Analyse de la propagation du feu et de la survie.
-* **Partie B** : Comparaison des performances entre Dijkstra et A*.
-
+-   **Partie A** : Analyse de la propagation du feu et de la survie.
+-   **Partie B** : Comparaison des performances entre Dijkstra et A\*.
