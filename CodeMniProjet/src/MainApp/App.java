@@ -138,7 +138,7 @@ public class App {
 			System.out.println("[INFO] Lecture du fichier argument : " + args[0]);
 		} else {
 			fileToRead = new File("data/ayutthaya.txt");
-			System.out.println("[INFO] Utilisation du fichier par défaut : data/ayutthaya.txt");
+			System.out.println("[INFO] Utilisation du fichier par défaut (dans le dossier CodeMiniProjet) : data/ayutthaya.txt");
 		}
 
 		try (Scanner reader = new Scanner(fileToRead)) {
