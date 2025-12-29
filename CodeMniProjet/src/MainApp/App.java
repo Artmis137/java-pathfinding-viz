@@ -184,6 +184,7 @@ public class App {
 				board.setMap(graph, ncols, nlines);
 
 				if (startV != -1 && endV != -1) {
+					
 					LinkedList<Integer> path = AStar(graph, startV, endV, ncols, fireTimes);
 					if (graph.vertexlist.get(endV).timeFromSource != Double.POSITIVE_INFINITY) {
 						System.out.println("Résultat : [Y]"); //
@@ -192,7 +193,7 @@ public class App {
 						System.out.println("Résultat : [N]"); //
 					}
 				}
-				Thread.sleep(1500);
+				Thread.sleep(2500);
 			}
 			System.out.println("\n[FIN] Traitement terminé.");
 		} catch (FileNotFoundException e) {
@@ -262,12 +263,12 @@ public class App {
 	 *         d'arrivée du feu.
 	 */
 	private static double[] computeFireTimes(Graph g, int nl, int nc) {
-		double[] fTimes = new double[nl * nc];
-		Arrays.fill(fTimes, Double.POSITIVE_INFINITY);
+		double[] fireTimes = new double[nl * nc];
+		Arrays.fill(fireTimes, Double.POSITIVE_INFINITY);
 		Queue<Integer> q = new LinkedList<>();
 		for (Vertex v : g.vertexlist)
 			if (v.info == 'F') {
-				fTimes[v.num] = 0;
+				fireTimes[v.num] = 0;
 				q.add(v.num);
 			}
 		int[][] dirs = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
@@ -277,14 +278,14 @@ public class App {
 				int ni = (u / nc) + d[0], nj = (u % nc) + d[1];
 				if (ni >= 0 && ni < nl && nj >= 0 && nj < nc) {
 					int v = ni * nc + nj;
-					if (g.vertexlist.get(v).info != '#' && fTimes[v] == Double.POSITIVE_INFINITY) {
-						fTimes[v] = fTimes[u] + 1;
+					if (g.vertexlist.get(v).info != '#' && fireTimes[v] == Double.POSITIVE_INFINITY) {
+						fireTimes[v] = fireTimes[u] + 1;
 						q.add(v);
 					}
 				}
 			}
 		}
-		return fTimes;
+		return fireTimes;
 	}
 
 	/**
@@ -329,6 +330,8 @@ public class App {
 				}
 			}
 		}
+		System.out.println("	Number of nodes explored: " + visited.size());
+		System.out.println("	Total time of the path: " + g.vertexlist.get(e).timeFromSource);
 		LinkedList<Integer> p = new LinkedList<>();
 		Vertex curr = g.vertexlist.get(e);
 		while (curr != null) {
