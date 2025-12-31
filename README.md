@@ -1,77 +1,117 @@
-# Projet Algorithmie Avancée - Recherche de chemin
+# Mini-Projet : Algorithmique Avancée
 
 **Étudiant :** Mamadou NIMAGA
 
-**Date :** 24 Décembre 2025
+**Date :** Décembre 2025
 
-**Algorithmes :** Dijkstra et A\*
+**Cours :** IF05X040 - Algorithmique avancée (Université Paris Cité)
 
-## 📂 Structure du Projet
+## 📂 Structure du Rendu
 
-L'arborescence du projet est organisée de la façon suivante :
+Le projet est organisé en deux modules logiciels distincts, accompagnés de leurs rapports d'analyse respectifs à la racine.
 
 ``` text
-java-pathfinding-viz/
-├── data/
-│   └── graph.txt          # Carte d'entrée définissant les types de terrain
-├── doc/                   # DOCUMENTATION GÉNÉRÉE (Javadoc)
-│   └── index.html         # Point d'entrée de la documentation technique
-├── src/
-│   └── MainApp/           # Package principal
-│       ├── App.java       # Interface graphique et Algorithmes (Dijkstra/A*)
-│       └── WeightedGraph.java # Structure de données (Graphe, Sommets, Arêtes)
-├── out.txt                # Résultat du dernier chemin calculé
-├── README.md              # Ce fichier
-└── .gitignore             # Fichiers exclus du rendu (bin/, .settings/, etc.)            # Documentation du projet
+NIMAGA_MiniProjet/
+├── README.md                <-- Ce fichier d'instructions
+├── NIMAGA_MiniProjet.pdf    <-- Rapport d'analyse : Partie A (Ayutthaya)
+├── NIMAGA_PartB.pdf         <-- Rapport d'analyse : Partie B (Visualiseur)
+│
+├── CodeMiniProjet/          <-- MODULE A : Labyrinthe d'Ayutthaya
+│   ├── src/MainApp/         <-- Sources Java documentées (A*, BFS Fire)
+│   ├── bin/                 <-- Fichiers compilés (.class)
+│   ├── data/                <-- ayutthaya.txt (Instances de test)
+│   ├── doc/                 <-- Javadoc technique (index.html)
+│   └── NIMAGA_MiniProjet.jar <-- Exécutable binaire (Module A)
+│
+└── CodePartB/               <-- MODULE B : Visualiseur de Chemins
+    ├── src/MainApp/         <-- Sources Java (Dijkstra, A* 8-voisins)
+    ├── bin/                 <-- Fichiers compilés (.class)
+    ├── data/                <-- graph.txt (Carte de terrain)
+    ├── doc/                 <-- Javadoc technique (index.html)
+    └── NIMAGA_PartB.jar     <-- Exécutable binaire (Module B)
 ```
 
-## Documentation Technique (Javadoc)
+## ⚠️ **IMPORTANT : Gestion des chemins de fichiers**
 
-Une documentation complète des classes et des méthodes a été rédigée. Pour la consulter :
+*(Valable pour module A et B)* Le programme utilise des chemins relatifs pour accéder aux données par défaut. - **Si vous utilisez un argument** : Vous pouvez lancer le JAR de n'importe où. `java -jar NIMAGA_MiniProjet.jar /un/chemin/absolu/vers/test.txt` - **Si vous ne mettez pas d'argument** : Vous devez impérativement lancer la commande depuis la racine du dossier du projet (là où se trouve le dossier `data/`). Sinon, le programme ne trouvera pas les instances par défaut et s'arrêtera.
 
-1.  Accédez au dossier `doc/`.
-2.  Ouvrez le fichier **`index.html`** dans votre navigateur web préféré.
-3.  Vous y trouverez le détail des implémentations, notamment la gestion du voisinage à 8 directions et le calcul des poids.
+## Module A : Le Labyrinthe d'Ayutthaya
 
-## Compilation et Exécution
+Ce module résout le problème d'évasion d'un prisonnier face à un incendie dynamique.
 
-### Depuis un IDE (Eclipse / IntelliJ)
+### Spécificités techniques
 
-1.  Importer le projet comme "Java Project".
-2.  S'assurer que le dossier `data` est bien à la racine du projet.
-3.  Exécuter la classe `App.java`.
+-   **Algorithme de survie** : A\* avec contrainte de temps dynamique.
+-   **Heuristique** : Distance de Manhattan (), optimale pour la **4-connexité**.
+-   **Gestion du feu** : Pré-calcul de la propagation par un **BFS multi-sources**.
 
-### Depuis le Terminal (Ligne de commande)
+### Exécution (JAR)
 
-À la racine du projet :
+Le programme accepte le chemin d'un fichier d'entrée en argument.
 
 ``` bash
-# Compilation
-javac -d bin src/MainApp/*.java
-
-# Exécution
-java -cp bin MainApp.App
+java -jar CodeMiniProjet/NIMAGA_MiniProjet.jar CodeMiniProjet/data/ayutthaya.txt
 ```
 
-## Récupération du dépôt (Git)
+*Si aucun argument n'est fourni, le programme charge par défaut `data/ayutthaya.txt` qui utilise l'exmple donné dans le sujet.*
 
-Pour récupérer l'intégralité du projet et son historique de développement :
+### Résultats Validés
+
+Le programme affiche les sorties attendues pour les instances types (exemple donné dans le sujet) :
+
+-   **Instance 1** : `Y` (Le prisonnier s'échappe).
+-   **Instance 2** : `N` (Le feu bloque la sortie).
+-   **Instance 3** : `N` (Prisonnier emmuré).
+
+## Module B : Visualiseur de Chemins (Dijkstra / A\*)
+
+Ce module compare l'efficacité des algorithmes de recherche de chemin sur différents types de terrains (herbe, eau, sable, etc.).
+
+### Spécificités Techniques
+
+-   **Connectivité** : 8-voisins (déplacements diagonaux inclus).
+-   **Poids** : Coût calculé selon le type de terrain. Les diagonales sont pondérées par sqrt(2).
+-   **Heuristique** : Distance Euclidienne.
+
+### Exécution (JAR)
 
 ``` bash
-git clone https://github.com/Artmis137/java-pathfinding-viz.git
+java -jar CodePartB/NIMAGA_PartB.jar CodePartB/data/graph.txt
 ```
 
-## Détails Techniques
+## Documentation technique (Javadoc)
 
--   **Graphe** : Construction avec une connectivité à **8 voisins**.
--   **Poids** : Moyenne des temps de parcours entre deux sommets, multipliée par pour les déplacements diagonaux.
--   **Heuristique (A*)** : Distance euclidienne entre le nœud courant et la cible.
+Chaque module contient sa propre documentation générée automatiquement à partir des commentaires Javadoc (en français).
 
-## Résultats obtenus (graph.txt)
+Pour consulter les détails des classes, des méthodes, de leurs **arguments (@param)** et de leurs **retours (@return)** :
 
-Le programme permet de comparer l'efficacité de Dijkstra et A\* pour un même chemin :
+1.  Naviguez dans le dossier `doc/` du module souhaité.
+2.  Ouvrez le fichier **`index.html`** dans un navigateur web.
 
-| Algorithme   | Nœuds explorés | Temps total (Poids) |
-|--------------|----------------|---------------------|
-| **Dijkstra** | 4156           | 302.61              |
-| **A**\*      | 4117           | 302.61              |
+-   **Doc Module A** : `CodeMiniProjet/doc/index.html`
+-   **Doc Module B** : `CodePartB/doc/index.html`
+
+## Compilation manuelle (sources)
+
+Si vous souhaitez recompiler les projets manuellement :
+
+**Module A :**
+
+``` bash
+javac -d CodeMiniProjet/bin CodeMiniProjet/src/MainApp/*.java
+java -cp CodeMiniProjet/bin MainApp.App CodeMiniProjet/data/ayutthaya.txt
+```
+
+**Module B :**
+
+``` bash
+javac -d CodePartB/bin CodePartB/src/MainApp/*.java
+java -cp CodePartB/bin MainApp.App CodePartB/data/graph.txt
+```
+
+## Rapports d'analyse
+
+Les rapports détaillent les preuves de complexité, l'analyse des heuristiques et les captures d'écran des résultats obtenus :
+
+-   **Partie A** : Analyse de la propagation du feu et de la survie.
+-   **Partie B** : Comparaison des performances entre Dijkstra et A\*.
